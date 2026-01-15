@@ -69,7 +69,7 @@ class Enemy:
 class Player:
     def __init__(self):
         self.x = 400  # 玩家初始x坐标
-        self.y = 300  # 玩家初始y坐标
+        self.y = 545  # 玩家初始y坐标
         self.speed = 5  # 玩家移动速度
         self.size = 50  # 玩家大小
         self.color = (255, 0, 0)  # 玩家颜色（红色）
