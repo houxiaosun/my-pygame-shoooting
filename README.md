@@ -2,6 +2,9 @@
 
 一个使用 Pygame 开发的 2D 射击游戏，是我学习 Python 和游戏开发的第一个项目。
 
+![License](https://img.shields.io/badge/License-MIT-green.svg)
+![Python](https://img.shields.io/badge/Python-3.x-blue.svg)
+
 ## 🎮 如何运行
 1.  确保已安装 Python 3.1及以上。
 2.  安装 Pygame 库：在命令行输入 `pip install pygame`。
