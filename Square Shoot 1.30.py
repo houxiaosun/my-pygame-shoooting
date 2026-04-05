@@ -4,8 +4,11 @@ import random
 import os  # 1.21新增导入os模块（显示文字）
 
 # 随机数生成 - 敌人出现的间隔时间和初始敌人数量
-generate_interval = random.randint(5, 10)  # 生成间隔时间（秒）
-Enemy_number = random.randint(1, 5)  # 初始敌人数量
+generate_interval = random.randint(3, 5)
+generate_interval2 = random.randint(3, 5)# 生成间隔时间（秒）
+
+Enemy_number = random.randint(1, 3)
+Enemy2_number = random.randint(1, 5)# 初始敌人数量
 
 
 # 子弹类
@@ -39,7 +42,7 @@ class Enemy:
     def __init__(self):
         self.size = 50  # 敌人大小
         self.x = random.randint(100, 700)  # 敌人初始x坐标（随机）
-        self.y = random.randint(100, 500)  # 敌人初始y坐标（随机）
+        self.y = random.randint(200, 500)  # 敌人初始y坐标（随机）
         self.speed = random.randint(2, 4)  # 敌人移动速度（随机）
         self.color = (0, 0, 255)  # 敌人颜色（蓝色）
 
@@ -65,6 +68,35 @@ class Enemy:
         self.y = random.randint(100, 500)
         self.speed = random.randint(2, 4)
 
+class Enemy2:
+    def __init__(self):
+        self.size = random.randint(35,70)  # 敌人大小
+        self.x = random.randint(100, 700)  # 敌人初始x坐标（随机）
+        self.y = random.randint(200, 500)  # 敌人初始y坐标（随机）
+        self.speed = random.randint(4, 7)  # 敌人移动速度（随机）
+        self.color = (255, 255, 0)  # 敌人颜色（蓝色）
+
+    def update(self):
+        """更新敌人位置 - 水平移动，碰到边界反弹"""
+        self.x += self.speed  # 水平移动
+
+        # 碰到边界反弹
+        if self.x > 800 - self.size or self.x < 0:
+            self.speed = -self.speed  # 反转移动方向
+
+    def draw(self, screen):
+        """在屏幕上绘制敌人"""
+        pygame.draw.rect(screen, self.color, (self.x, self.y, self.size, self.size))
+
+    def get_rect(self):
+        """获取敌人的矩形区域，用于碰撞检测"""
+        return pygame.Rect(self.x, self.y, self.size, self.size)
+
+    def respawn(self):
+        """重新生成敌人 - 重置位置和速度"""
+        self.x = random.randint(100, 700)
+        self.y = random.randint(100, 500)
+        self.speed = random.randint(2, 4)
 
 # 玩家类
 class Player:
@@ -160,17 +192,26 @@ def main():
     player = Player()  # 创建玩家对象
     bullets = []  # 存储所有子弹对象的列表
     enemies = []  # 存储所有敌人对象的列表
-
+    enemies2 = []
     # 初始化敌人 - 创建随机数量的敌人
     for _ in range(Enemy_number):
         enemies.append(Enemy())
+    for _ in range(Enemy2_number):
+        enemies2.append(Enemy2())
+
+    # 初始化敌人后添加：
+    print(f"蓝色敌人数量: {len(enemies)}")
+    print(f"黄色敌人数量: {len(enemies2)}")
+    print(f"敌人总数: {len(enemies) + len(enemies2)}")
 
     # 游戏循环控制
     clock = pygame.time.Clock()  # 创建时钟对象，控制游戏帧率
     running = True  # 游戏运行标志
 
-    enemy_timer = 0  # 记录时间
+    enemy_timer = 0
+    enemy2_timer = 0# 记录时间
     spawn_interval = generate_interval
+    spawn_interval2 = generate_interval2
 
     # 游戏主循环
     while running:
@@ -182,7 +223,7 @@ def main():
             if event.type == pygame.QUIT:  # 如果点击关闭窗口
                 running = False
 
-            # 按J键发射子弹 - 修正这里的错误
+            # 按J键发射子弹
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_j:
                     new_bullet = player.shoot()  # 获取新子弹
@@ -194,8 +235,11 @@ def main():
         player.update(keys)  # 根据按键更新玩家位置
 
         # 更新所有敌人的位置
+
         for enemy in enemies:
             enemy.update()
+        for enemy2 in enemies2:
+            enemy2.update()
 
         # 更新所有子弹的位置并检查是否飞出屏幕
         for bullet in bullets[:]:  # 遍历子弹列表的副本
@@ -208,28 +252,39 @@ def main():
         player_rect = player.get_rect()  # 获取玩家的矩形区域
         for enemy in enemies:
             if player_rect.colliderect(enemy.get_rect()):  # 如果玩家和敌人矩形重叠
-                print("💥 碰撞！游戏结束！")
+                print("💥 碰撞蓝色敌人！游戏结束！")
                 running = False  # 结束游戏
+                print("总分数为:",score," 分")
+
+        for enemy in enemies2:
+            if player_rect.colliderect(enemy.get_rect()):  # 如果玩家和敌人矩形重叠
+                print("💥 碰撞黄色敌人！游戏结束！")
+                running = False  # 结束游戏
+                print("总分数为:",score," 分")
 
         # 碰撞检测 - 子弹与敌人
         for bullet in bullets[:]:  # 遍历子弹列表的副本
             for enemy in enemies[:]:  # 遍历敌人列表的副本
                 if bullet.get_rect().colliderect(enemy.get_rect()):  # 如果子弹和敌人矩形重叠
-                    print("🎯 消灭敌人！")
-
+                    print("🎯 消灭蓝色敌人！")
                     bullets.remove(bullet)  # 移除子弹
                     player.bullet_destroyed()  # 通知子弹已销毁
                     enemies.remove(enemy)  # 移除敌人
                     score += 10  # 加分
+                    break  # 跳出内层循环
 
-                    if len(enemies) == 0:  # 检测敌人数量
-                        enemies.append(Enemy())  # 添加新敌人
-
+            for enemy2 in enemies2[:]:  # 遍历敌人列表的副本
+                if bullet.get_rect().colliderect(enemy2.get_rect()):  # 如果子弹和敌人矩形重叠
+                    print("🎯 消灭黄色敌人！")
+                    bullets.remove(bullet)  # 移除子弹
+                    player.bullet_destroyed()  # 通知子弹已销毁
+                    enemies2.remove(enemy2)  # 移除敌人
+                    score += 15  # 加分
                     break  # 跳出内层循环
 
         # 更新敌人生成计时器
         enemy_timer += 1 / 60
-
+        enemy2_timer += 1 / 60
         # 检查是否该生成敌人
         if enemy_timer >= spawn_interval:
             # 生成新敌人
@@ -238,12 +293,27 @@ def main():
             enemy_timer = 0
             # 重新随机生成时间
             spawn_interval = random.randint(2, 5)
-            print(f'生成敌人了！下次在{spawn_interval}秒后生成')
+            print(f'生成蓝色敌人了！下次在{spawn_interval}秒后生成')
 
             # 检测敌人数量
             if len(enemies) > 5:
                 # 删除最旧的敌人
                 enemies.remove(enemies[0])
+
+        if enemy2_timer >= spawn_interval2:
+            # 生成新敌人
+            enemies2.append(Enemy2())
+
+            # 重置计时器
+            enemy2_timer = 0
+            # 重新随机生成时间
+            spawn_interval2 = random.randint(2, 5)
+            print(f'生成黄色敌人了！下次在{spawn_interval2}秒后生成')
+
+            # 检测敌人数量
+            if len(enemies2) > 5:
+                # 删除最旧的敌人
+                enemies2.remove(enemies2[0])
 
         # ========== 1.21修改：绘制文本部分 ==========
         # 使用中文字体显示分数
@@ -255,6 +325,8 @@ def main():
 
         for enemy in enemies:  # 绘制所有敌人
             enemy.draw(screen)
+        for enemy2 in enemies2:  # 绘制所有敌人
+            enemy2.draw(screen)
         for bullet in bullets:  # 绘制所有子弹
             bullet.draw(screen)
 
@@ -263,6 +335,7 @@ def main():
 
     # 退出游戏
     pygame.quit()
+    print("总分数为:", score, " 分")
     sys.exit()
 
 
